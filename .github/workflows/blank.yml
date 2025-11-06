@@ -1,0 +1,42 @@
+name: CI — Test & Lint
+
+on:
+  push:
+    branches: ["main"]
+  pull_request:
+    branches: ["main"]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Репоны көшіру
+        uses: actions/checkout@v4
+
+      - name: Python орнату
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.11"
+
+      - name: Pip кэшін қолдану
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ hashFiles('requirements.txt') }}
+          restore-keys: |
+            ${{ runner.os }}-pip-
+
+      - name: Тәуелділіктерді орнату
+        run: pip install -r requirements.txt
+
+      - name: Линтинг (flake8)
+        run: |
+          pip install flake8
+          flake8 .
+
+      - name: Тест және coverage
+        run: |
+          pip install coverage pytest
+          coverage run -m pytest
+          coverage report -m
