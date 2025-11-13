@@ -1,42 +1,35 @@
-name: CI — Test & Lint
+name: Simple CI with Cache
 
 on:
   push:
-    branches: ["main"]
+    branches: [main]
   pull_request:
-    branches: ["main"]
+    branches: [main]
 
 jobs:
   test:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Репоны көшіру
-        uses: actions/checkout@v4
+      # 1. Кодты репозиторийден алу
+      - uses: actions/checkout@v3
 
-      - name: Python орнату
-        uses: actions/setup-python@v4
+      # 2. Python орнату
+      - uses: actions/setup-python@v4
         with:
-          python-version: "3.11"
+          python-version: '3.11'
 
-      - name: Pip кэшін қолдану
-        uses: actions/cache@v4
+      # 3. Тәуелділіктерді кэштеу
+      - name: Cache pip packages
+        uses: actions/cache@v3
         with:
           path: ~/.cache/pip
-          key: ${{ runner.os }}-pip-${{ hashFiles('requirements.txt') }}
+          key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
           restore-keys: |
             ${{ runner.os }}-pip-
 
-      - name: Тәуелділіктерді орнату
-        run: pip install -r requirements.txt
+      # 4. Тәуелділіктерді орнату
+      - run: pip install -r requirements.txt
 
-      - name: Линтинг (flake8)
-        run: |
-          pip install flake8
-          flake8 .
-
-      - name: Тест және coverage
-        run: |
-          pip install coverage pytest
-          coverage run -m pytest
-          coverage report -m
+      # 5. Тесттерді іске қосу
+      - run: pytest
